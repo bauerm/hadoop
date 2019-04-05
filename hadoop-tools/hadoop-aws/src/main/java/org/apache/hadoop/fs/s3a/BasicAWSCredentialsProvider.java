@@ -21,21 +21,37 @@ package org.apache.hadoop.fs.s3a;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.AWSCredentials;
 import org.apache.commons.lang.StringUtils;
 
 public class BasicAWSCredentialsProvider implements AWSCredentialsProvider {
   private final String accessKey;
   private final String secretKey;
+  private final String sessionToken;
 
   public BasicAWSCredentialsProvider(String accessKey, String secretKey) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
+    this.sessionToken = null;
+  }
+  
+  public BasicAWSCredentialsProvider(String accessKey, String secretKey, String sessionToken) {
+	    this.accessKey = accessKey;
+	    this.secretKey = secretKey;
+	    this.sessionToken = sessionToken;
   }
 
   public AWSCredentials getCredentials() {
     if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey)) {
-      return new BasicAWSCredentials(accessKey, secretKey);
+    	if(StringUtils.isEmpty(sessionToken))
+    	{
+    		return new BasicAWSCredentials(accessKey, secretKey);
+    	}
+    	else
+    	{
+    		return new BasicSessionCredentials(accessKey, secretKey, sessionToken);
+    	}
     }
     throw new AmazonClientException(
         "Access key or secret key is null");
